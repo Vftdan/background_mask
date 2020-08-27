@@ -5,7 +5,7 @@ import argparse
 from PIL import Image
 
 
-def background_mask(img_name, threshold):
+def background_mask(img_name, threshold, bg):
     try:
         img = Image.open(img_name)
     except FileNotFoundError as e:
@@ -22,10 +22,10 @@ def background_mask(img_name, threshold):
     width, height = red.size
     for i in range(0, width):
         for j in range(0, height):
-            r =   red.getpixel((i, j))
-            g = green.getpixel((i, j))
-            b =  blue.getpixel((i, j))
-            if r > threshold and g > threshold and b > threshold:
+            r = abs(  red.getpixel((i, j)) - bg[0])
+            g = abs(green.getpixel((i, j)) - bg[1])
+            b = abs( blue.getpixel((i, j)) - bg[2])
+            if r <= threshold and g <= threshold and b <= threshold:
                 pixels[i, j] = 0
             else:
                 pixels[i, j] = 255
@@ -35,10 +35,12 @@ def background_mask(img_name, threshold):
 def _main():
     parser = argparse.ArgumentParser()
     parser.add_argument('img_name', help='input image name')
-    parser.add_argument('--threshold', type=int, default=240,
-            help='threshold for transparency mask')
+    parser.add_argument('--threshold', type=int, default=15,
+            help='threshold for transparency mask, 0 for exact match')
+    parser.add_argument('--background', type=int, default=(255, 255, 255),
+            nargs=3, metavar=('r', 'g', 'b'), help='background color')
     args = parser.parse_args()
-    background_mask(args.img_name, args.threshold)
+    background_mask(args.img_name, args.threshold, args.background)
  
 if __name__ == '__main__':
     _main()
