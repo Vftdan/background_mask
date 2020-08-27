@@ -3,15 +3,17 @@
 # purporse: change white background to transparent state
 import argparse
 from PIL import Image
+
+
 def background_mask(img_name, threshold):
     try:
         img = Image.open(img_name)
     except FileNotFoundError as e:
-        raise e        
-    if(img.mode == 'CMYK'):
+        raise e
+    if img.mode == 'CMYK':
         img = img.convert('RGB')
     has_alpha = (img.mode == 'RGBA')
-    if not has_alpha:        
+    if not has_alpha:
         red, green, blue = img.split()
         alpha = Image.new(mode='L', size=red.size)
     else:
@@ -20,21 +22,23 @@ def background_mask(img_name, threshold):
     width, height = red.size
     for i in range(0, width):
         for j in range(0, height):
-            r = red.getpixel((i,j))
-            g = green.getpixel((i,j))
-            b = blue.getpixel((i,j))
-            if(r>threshold and g>threshold and b>threshold):
-                pixels[i,j] = 0
+            r =   red.getpixel((i, j))
+            g = green.getpixel((i, j))
+            b =  blue.getpixel((i, j))
+            if r > threshold and g > threshold and b > threshold:
+                pixels[i, j] = 0
             else:
-                pixels[i,j] = 255
+                pixels[i, j] = 255
     img.putalpha(alpha)
     img.save(img_name.split('.')[0] + '_mask.png')
-def _main(): 
+
+def _main():
     parser = argparse.ArgumentParser()
     parser.add_argument('img_name', help='input image name')
-    parser.add_argument('--threshold', type=int, default=240, help='threshold for transparency mask')
+    parser.add_argument('--threshold', type=int, default=240,
+            help='threshold for transparency mask')
     args = parser.parse_args()
-    background_mask(args.img_name, args.threshold)               
+    background_mask(args.img_name, args.threshold)
  
 if __name__ == '__main__':
-    _main()        
+    _main()
